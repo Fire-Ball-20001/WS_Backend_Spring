@@ -13,7 +13,7 @@ public class Employee {
     private String firstName;
     private String lastName;
     private String description;
-    private PostEmployee post;
+    private UUID postId;
     private String image;
     private String[] characteristics;
 }

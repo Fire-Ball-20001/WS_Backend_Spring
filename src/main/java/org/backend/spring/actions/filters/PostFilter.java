@@ -62,6 +62,11 @@ public class PostFilter implements Filter<PostEmployee>{
         return true;
     }
 
+    @Override
+    public Filter<?> getSubFilter() {
+        return null;
+    }
+
     private boolean isApproximatelyMatch(String orig, String find) {
         StringBuilder find_regex = new StringBuilder(".*");
         for (char ch : find.toCharArray()) {

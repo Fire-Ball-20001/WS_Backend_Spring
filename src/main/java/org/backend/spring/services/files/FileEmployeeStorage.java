@@ -1,15 +1,14 @@
 package org.backend.spring.services.files;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.backend.spring.actions.Action;
-import org.backend.spring.actions.Actions;
-import org.backend.spring.actions.GetEmployeeFromDto;
+import org.backend.spring.actions.BinaryAction;
 import org.backend.spring.actions.filters.Filter;
 import org.backend.spring.dto.FullEmployeeDto;
 import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.mappers.EmployeeMapper;
-import org.backend.spring.mappers.MapperBase;
 import org.backend.spring.models.Employee;
 import org.backend.spring.services.DataStorage;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,24 +30,21 @@ import static org.backend.spring.services.utils.Files.deleteFileOrDirectory;
 @Component
 @DependsOn("filePostStorage")
 @CommonsLog
+@RequiredArgsConstructor
 public class FileEmployeeStorage implements DataStorage<Employee> {
     private Map<UUID, Employee> objects = new HashMap<>();
     @Value("${data.path_employees}")
     private String path_str;
     private final ObjectMapper objectMapper;
     private final EmployeeMapper employeeMapper;
-    private Actions actions;
+    private final Action<FullEmployeeDto,Employee> fullAction;
+    private final BinaryAction<Employee,Filter<Employee>,Boolean> filterAction;
 
-    public FileEmployeeStorage(ObjectMapper objectMapper, MapperBase mapperBase, Actions actions) {
-        this.objectMapper = objectMapper;
-        this.employeeMapper = mapperBase.getEmployeeMapper();
-        this.actions = actions;
-    }
+
 
     @PostConstruct
     private void postConstructor()
     {
-        actions.setEmployeeStorage(this);
         try{
             loadData();
         }
@@ -61,7 +57,8 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     @Override
     public Employee getObject(Filter<Employee> filter) {
         Optional<Employee> tempPostEmployee = objects.values().stream()
-                .filter(filter::match)
+                .filter((object)
+                        -> filterAction.execute(object,filter))
                 .findFirst();
         if(!tempPostEmployee.isPresent())
         {
@@ -73,12 +70,19 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     @Override
     public void setObject(Employee object) {
 
+        if(!objects.containsKey(object.getId()))
+        {
+            throw new NotFoundException("Not found employee object");
+        }
+        objects.replace(object.getId(),object);
         saveData();
     }
 
     @Override
     public Employee[] getObjects(Filter<Employee> filter) {
-        return objects.values().stream().filter(filter::match).toArray(Employee[]::new);
+        return objects.values().stream().filter((object)
+                -> filterAction.execute(object,filter))
+                .toArray(Employee[]::new);
     }
 
     @Override
@@ -89,13 +93,14 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
 
     @Override
     public boolean removeObject(Filter<Employee> filter) {
-        if(objects.values().stream().noneMatch(filter::matchStrictly))
+        if(objects.values().stream().noneMatch((object)
+                -> filterAction.execute(object,filter,true)))
         {
             throw new NotFoundException("Not found employee object.");
         }
         for (Employee employee:
                 objects.values().toArray(new Employee[0])) {
-            if(filter.matchStrictly(employee))
+            if(filterAction.execute(employee,filter,true))
             {
                 objects.remove(employee.getId());
             }
@@ -108,7 +113,6 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     {
         String employees_string;
         FullEmployeeDto[] employees;
-        Action<FullEmployeeDto,Employee> action = (Action<FullEmployeeDto, Employee>) actions.get(GetEmployeeFromDto.class);
         try(BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
             employees_string = fileReader.lines().collect(Collectors.joining("\n"));
         }
@@ -127,14 +131,13 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         objects = new HashMap<>();
         for(FullEmployeeDto dto : employees)
         {
-            Employee employee = action.execute(dto);
+            Employee employee = fullAction.execute(dto);
             objects.put(employee.getId(),employee);
         }
     }
 
     private void saveData()
     {
-        String employees_string;
         List<FullEmployeeDto> employees = new ArrayList<>();
         if(!deleteFileOrDirectory(new File(path_str)))
         {
@@ -146,7 +149,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         }
         for(Employee object: objects.values())
         {
-            employees.add(employeeMapper.toDto(object,object.getPost().getId().toString()));
+            employees.add(employeeMapper.toDto(object,object.getPostId().toString()));
         }
         try(FileWriter fw = new FileWriter(path_str))
         {

@@ -59,11 +59,6 @@ public class EmployeeFilter implements Filter<Employee> {
                 return false;
             }
         }
-        if (postFilter != null) {
-            if (!postFilter.matchStrictly(object.getPost())) {
-                return false;
-            }
-        }
         if (characteristics != null) {
             if (object.getCharacteristics().length != characteristics.length) {
                 return false;
@@ -102,11 +97,6 @@ public class EmployeeFilter implements Filter<Employee> {
                 return false;
             }
         }
-        if (postFilter != null) {
-            if (!postFilter.matchApproximately(object.getPost())) {
-                return false;
-            }
-        }
         if (characteristics != null) {
 
             return Arrays.stream(object.getCharacteristics()).allMatch(
@@ -123,6 +113,11 @@ public class EmployeeFilter implements Filter<Employee> {
 
         }
         return true;
+    }
+
+    @Override
+    public Filter<?> getSubFilter() {
+        return postFilter;
     }
 
     private boolean isApproximatelyMatch(String orig, String find) {
