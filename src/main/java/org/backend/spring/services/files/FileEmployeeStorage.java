@@ -38,7 +38,6 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     private final ObjectMapper objectMapper;
     private final EmployeeMapper employeeMapper;
     private final Action<FullEmployeeDto,Employee> fullAction;
-    private final BinaryAction<Employee,Filter<Employee>,Boolean> filterAction;
 
 
 
@@ -57,8 +56,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     @Override
     public Employee getObject(Filter<Employee> filter) {
         Optional<Employee> tempPostEmployee = objects.values().stream()
-                .filter((object)
-                        -> filterAction.execute(object,filter))
+                .filter(filter::match)
                 .findFirst();
         if(!tempPostEmployee.isPresent())
         {
@@ -80,8 +78,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
 
     @Override
     public Employee[] getObjects(Filter<Employee> filter) {
-        return objects.values().stream().filter((object)
-                -> filterAction.execute(object,filter))
+        return objects.values().stream().filter(filter::match)
                 .toArray(Employee[]::new);
     }
 
@@ -93,14 +90,13 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
 
     @Override
     public boolean removeObject(Filter<Employee> filter) {
-        if(objects.values().stream().noneMatch((object)
-                -> filterAction.execute(object,filter,true)))
+        if(objects.values().stream().noneMatch(filter::match))
         {
             throw new NotFoundException("Not found employee object.");
         }
         for (Employee employee:
                 objects.values().toArray(new Employee[0])) {
-            if(filterAction.execute(employee,filter,true))
+            if(filter.matchStrictly(employee))
             {
                 objects.remove(employee.getId());
             }
@@ -149,7 +145,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         }
         for(Employee object: objects.values())
         {
-            employees.add(employeeMapper.toDto(object,object.getPostId().toString()));
+            employees.add(employeeMapper.toDto(object,object.getPost().getId().toString()));
         }
         try(FileWriter fw = new FileWriter(path_str))
         {

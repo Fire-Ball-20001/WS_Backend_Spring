@@ -3,6 +3,7 @@ package org.backend.spring.actions.filters;
 import lombok.Builder;
 import lombok.Getter;
 import org.backend.spring.models.Employee;
+import static org.backend.spring.services.utils.BooleanUtils.*;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -15,6 +16,7 @@ public class EmployeeFilter implements Filter<Employee> {
     private String lastName;
     private String description;
     private PostFilter postFilter;
+    private ContactsFilter contactsFilter;
     private String[] characteristics;
     @Builder.Default
     private boolean isStrictly = false;
@@ -59,6 +61,20 @@ public class EmployeeFilter implements Filter<Employee> {
                 return false;
             }
         }
+        if(postFilter != null)
+        {
+            if(!postFilter.matchStrictly(object.getPost()))
+            {
+                return false;
+            }
+        }
+        if(contactsFilter != null)
+        {
+            if(!contactsFilter.matchStrictly(object.getContacts()))
+            {
+                return false;
+            }
+        }
         if (characteristics != null) {
             if (object.getCharacteristics().length != characteristics.length) {
                 return false;
@@ -68,6 +84,7 @@ public class EmployeeFilter implements Filter<Employee> {
                                 Arrays.asList(characteristics).contains(character));
             }
         }
+
         return true;
     }
 
@@ -97,6 +114,20 @@ public class EmployeeFilter implements Filter<Employee> {
                 return false;
             }
         }
+        if(postFilter != null)
+        {
+            if(!postFilter.matchApproximately(object.getPost()))
+            {
+                return false;
+            }
+        }
+        if(contactsFilter != null)
+        {
+            if(!contactsFilter.matchApproximately(object.getContacts()))
+            {
+                return false;
+            }
+        }
         if (characteristics != null) {
 
             return Arrays.stream(object.getCharacteristics()).allMatch(
@@ -115,16 +146,4 @@ public class EmployeeFilter implements Filter<Employee> {
         return true;
     }
 
-    @Override
-    public Filter<?> getSubFilter() {
-        return postFilter;
-    }
-
-    private boolean isApproximatelyMatch(String orig, String find) {
-        StringBuilder find_regex = new StringBuilder(".*");
-        for (char ch : find.toCharArray()) {
-            find_regex.append(ch).append(".*");
-        }
-        return orig.matches(find_regex.toString());
-    }
 }

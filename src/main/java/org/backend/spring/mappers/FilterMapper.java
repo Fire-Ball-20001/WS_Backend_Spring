@@ -14,10 +14,14 @@ public interface FilterMapper {
     PostFilter toPostEntity(FilterDto filterDto);
 
 
+
     @Mapping(target = "postFilter.id",source = "dto.postId")
     @Mapping(target = "postFilter.name",source = "dto.postName")
     @Mapping(target = "postFilter.isStrictly",source = "dto.isStrictly")
     @Mapping(target = "isStrictly",source = "dto.isStrictly")
+    @Mapping(target = "contactsFilter.phone",source = "dto.phone")
+    @Mapping(target = "contactsFilter.email",source = "dto.email")
+    @Mapping(target = "contactsFilter.workEmail",source = "dto.workEmail")
     EmployeeFilter toEmployeeEntity(FilterDto dto);
 
     @Mapping(target = "postId",expression = "java(filter.getId())")
@@ -26,6 +30,9 @@ public interface FilterMapper {
 
     @Mapping(target = "postId",expression = "java(filter.getPostFilter().getId())")
     @Mapping(target = "postName",expression = "java(filter.getPostFilter().getName())")
+    @Mapping(target = "phone",expression = "java(filter.getContactsFilter().getPhone())")
+    @Mapping(target = "email",expression = "java(filter.getContactsFilter().getEmail())")
+    @Mapping(target = "workEmail",expression = "java(filter.getContactsFilter().getWorkEmail())")
     FilterDto toDto(EmployeeFilter filter);
 
 }

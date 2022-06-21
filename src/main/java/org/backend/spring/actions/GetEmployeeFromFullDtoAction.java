@@ -26,7 +26,7 @@ public class GetEmployeeFromFullDtoAction implements Action<FullEmployeeDto,Empl
         {
             postEmployee = PostUtils.getDefaultPost();
         }
-        return mapper.toEntity(object, postEmployee.getId());
+        return mapper.toEntity(object, postEmployee);
     }
 }
 

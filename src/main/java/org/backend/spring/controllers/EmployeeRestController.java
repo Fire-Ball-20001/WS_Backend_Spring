@@ -38,7 +38,7 @@ public class EmployeeRestController {
     {
         EmployeeFilter employeeFilter = mapperBase.getFilterMapper().toEmployeeEntity(filter);
         Employee find = storage.getObject(employeeFilter);
-        return mapperBase.getEmployeeMapper().toDto(find,find.getPostId().toString());
+        return mapperBase.getEmployeeMapper().toDto(find,find.getPost().getId().toString());
     }
     @GetMapping("/employees")
     @Operation(summary = "Get more employees with filter",tags = "Employee")
@@ -48,7 +48,7 @@ public class EmployeeRestController {
         Employee[] employees = storage.getObjects(employeeFilter);
         return Arrays.stream(employees).map(
                 employee -> mapperBase.getEmployeeMapper()
-                                .toDto(employee,employee.getPostId().toString()))
+                                .toDto(employee,employee.getPost().getId().toString()))
                 .toArray(FullEmployeeDto[]::new);
     }
 

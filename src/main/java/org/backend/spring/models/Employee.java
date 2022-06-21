@@ -13,7 +13,9 @@ public class Employee {
     private String firstName;
     private String lastName;
     private String description;
-    private UUID postId;
+    private PostEmployee post;
     private String image;
     private String[] characteristics;
+    private Contacts contacts;
+    private JobType jobType;
 }

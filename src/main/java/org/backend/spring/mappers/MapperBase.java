@@ -18,4 +18,9 @@ public class MapperBase {
     {
         return Mappers.getMapper(PostMapper.class);
     }
+    @Bean
+    public ContactsMapper getContactsMapper()
+    {
+        return Mappers.getMapper(ContactsMapper.class);
+    }
 }

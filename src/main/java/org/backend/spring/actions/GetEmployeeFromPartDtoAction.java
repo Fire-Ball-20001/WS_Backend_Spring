@@ -26,7 +26,7 @@ public class GetEmployeeFromPartDtoAction implements Action<PartEmployeeDto,Empl
         {
             postEmployee = PostUtils.getDefaultPost();
         }
-        return mapper.toEntity(object, postEmployee.getId());
+        return mapper.toEntity(object, postEmployee);
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.backend.spring.models.PostEmployee;
+import static org.backend.spring.services.utils.BooleanUtils.*;
 
 import java.util.UUID;
 @Builder
@@ -62,16 +63,5 @@ public class PostFilter implements Filter<PostEmployee>{
         return true;
     }
 
-    @Override
-    public Filter<?> getSubFilter() {
-        return null;
-    }
 
-    private boolean isApproximatelyMatch(String orig, String find) {
-        StringBuilder find_regex = new StringBuilder(".*");
-        for (char ch : find.toCharArray()) {
-            find_regex.append(ch).append(".*");
-        }
-        return orig.matches(find_regex.toString());
-    }
 }

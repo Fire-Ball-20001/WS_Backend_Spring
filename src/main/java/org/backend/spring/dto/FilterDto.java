@@ -1,10 +1,12 @@
 package org.backend.spring.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class FilterDto {
     private String id;
     private String firstName;
@@ -13,10 +15,9 @@ public class FilterDto {
     private String postName;
     private String postId;
     private String[] characteristics;
-    public boolean isStrictly;
+    private String phone;
+    private String email;
+    private String workEmail;
+    public Boolean isStrictly = false;
 
-    public void setIsStrictly(boolean new_value)
-    {
-        isStrictly = new_value;
-    }
 }
