@@ -5,11 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.backend.spring.actions.Action;
 import org.backend.spring.actions.BinaryAction;
+import org.backend.spring.actions.filters.EmployeeFilter;
 import org.backend.spring.actions.filters.Filter;
+import org.backend.spring.actions.filters.PostFilter;
 import org.backend.spring.dto.FullEmployeeDto;
+import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.mappers.EmployeeMapper;
 import org.backend.spring.models.Employee;
+import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -38,6 +42,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     private final ObjectMapper objectMapper;
     private final EmployeeMapper employeeMapper;
     private final Action<FullEmployeeDto,Employee> fullAction;
+    private final BinaryEvent<PostEmployee,PostEmployee> event;
 
 
 
@@ -51,6 +56,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         {
             log.error("Error load employees data");
         }
+        event.addListener(this::updateEmployees);
     }
 
     @Override
@@ -104,6 +110,27 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         saveData();
         return true;
     }
+
+    private Void updateEmployees(PostEmployee old, PostEmployee newPost)
+    {
+        Employee[] employees = getObjects(
+                EmployeeFilter.builder()
+                        .postFilter(
+                                PostFilter
+                                        .builder()
+                                        .id(old
+                                                .getId().
+                                                toString())
+                                        .build())
+                        .build());
+        for(Employee employee : employees)
+        {
+            employee.setPost(newPost);
+            setObject(employee);
+        }
+        return null;
+    }
+
 
     private void loadData()
     {

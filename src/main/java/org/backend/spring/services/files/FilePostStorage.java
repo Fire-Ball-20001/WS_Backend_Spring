@@ -1,15 +1,20 @@
 package org.backend.spring.services.files;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
+import org.backend.spring.actions.BinaryAction;
 import org.backend.spring.actions.filters.Filter;
 import org.backend.spring.dto.FullPostDto;
+import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.mappers.MapperBase;
 import org.backend.spring.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
 import org.backend.spring.services.utils.PostUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -28,6 +33,7 @@ import static org.backend.spring.services.utils.Files.deleteFileOrDirectory;
 @ConditionalOnProperty(prefix = "data",name = "source",havingValue = "files",matchIfMissing = true)
 @CommonsLog
 @Component
+@RequiredArgsConstructor
 public class FilePostStorage implements DataStorage<PostEmployee> {
 
     private Map<UUID,PostEmployee> objects = new HashMap<>();
@@ -35,12 +41,7 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     private String path_str;
     private final ObjectMapper objectMapper;
     private final PostMapper postMapper;
-
-    public FilePostStorage(ObjectMapper objectMapper, MapperBase mapperBase) {
-        this.objectMapper = objectMapper;
-        this.postMapper = mapperBase.getPostMapper();
-
-    }
+    private final BinaryEvent<PostEmployee,PostEmployee> event;
     @PostConstruct
     private void postConstruct()
     {
@@ -80,8 +81,8 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
         {
             throw new NotFoundException("Not found post object.");
         }
+        event.call(objects.get(object.getId()),object);
         objects.replace(object.getId(),object);
-
         saveData();
     }
 
@@ -106,6 +107,7 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
              objects.values().toArray(new PostEmployee[0])) {
             if(filter.matchStrictly(post) && !filter.matchStrictly(PostUtils.getDefaultPost()))
             {
+                event.call(post,PostUtils.getDefaultPost());
                 objects.remove(post.getId());
             }
         }

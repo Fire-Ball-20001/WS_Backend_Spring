@@ -1,9 +1,6 @@
 package org.backend.spring.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 @AllArgsConstructor
@@ -11,5 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PartPostDto {
+    @NonNull
     private String name;
 }

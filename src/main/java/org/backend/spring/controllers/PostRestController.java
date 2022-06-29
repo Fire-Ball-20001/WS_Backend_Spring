@@ -11,12 +11,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.AllArgsConstructor;
 import org.backend.spring.actions.filters.PostFilter;
 import org.backend.spring.dto.FilterDto;
 import org.backend.spring.dto.FullPostDto;
 import org.backend.spring.dto.PartPostDto;
 import org.backend.spring.mappers.FilterMapper;
-import org.backend.spring.mappers.MapperBase;
 import org.backend.spring.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
@@ -24,19 +24,13 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController()
+@AllArgsConstructor
 public class PostRestController {
 
     DataStorage<PostEmployee> storage;
     PostMapper postMapper;
     ObjectMapper objectMapper;
     FilterMapper filterMapper;
-
-    public PostRestController(DataStorage<PostEmployee> storage, MapperBase base,ObjectMapper objectMapper) {
-        this.storage = storage;
-        this.objectMapper = objectMapper;
-        postMapper = base.getPostMapper();
-        filterMapper = base.getFilterMapper();
-    }
 
     @GetMapping("/post")
     @Operation(summary = "Get one post with filter",tags = "Post")
@@ -289,6 +283,7 @@ public class PostRestController {
     public ObjectNode removePost(@RequestBody FilterDto filterDto)
     {
         PostFilter filter = filterMapper.toPostEntity(filterDto);
-        return objectMapper.createObjectNode().put("status",storage.removeObject(filter));
+        boolean status = storage.removeObject(filter);
+        return objectMapper.createObjectNode().put("status",status);
     }
 }
