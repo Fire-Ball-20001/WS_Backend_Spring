@@ -1,4 +1,4 @@
-package org.backend.spring.services.utils;
+package org.backend.spring.utils;
 
 import org.backend.spring.models.PostEmployee;
 

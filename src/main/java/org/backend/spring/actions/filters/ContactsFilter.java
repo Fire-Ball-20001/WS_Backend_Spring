@@ -4,11 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.backend.spring.models.Contacts;
-import org.backend.spring.models.Employee;
 
-import java.util.function.Predicate;
-
-import static org.backend.spring.services.utils.BooleanUtils.*;
+import static org.backend.spring.utils.BooleanUtils.*;
 
 @AllArgsConstructor
 @Builder

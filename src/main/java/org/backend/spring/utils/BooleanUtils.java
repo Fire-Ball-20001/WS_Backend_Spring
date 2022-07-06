@@ -1,4 +1,4 @@
-package org.backend.spring.services.utils;
+package org.backend.spring.utils;
 
 public class BooleanUtils {
     public static boolean isApproximatelyMatch(String orig, String find) {

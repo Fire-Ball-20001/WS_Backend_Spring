@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.backend.spring.models.PostEmployee;
-import static org.backend.spring.services.utils.BooleanUtils.*;
+import static org.backend.spring.utils.BooleanUtils.*;
 
 import java.util.UUID;
 @Builder

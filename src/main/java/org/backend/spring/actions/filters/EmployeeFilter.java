@@ -3,7 +3,7 @@ package org.backend.spring.actions.filters;
 import lombok.Builder;
 import lombok.Getter;
 import org.backend.spring.models.Employee;
-import static org.backend.spring.services.utils.BooleanUtils.*;
+import static org.backend.spring.utils.BooleanUtils.*;
 
 import java.util.Arrays;
 import java.util.UUID;

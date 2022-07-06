@@ -1,4 +1,4 @@
-package org.backend.spring.dto;
+package org.backend.spring.dto.post;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Builder
 @Getter
-public class FullPostDto {
+public class PostDto {
     @NonNull
     private String name;
     @NonNull

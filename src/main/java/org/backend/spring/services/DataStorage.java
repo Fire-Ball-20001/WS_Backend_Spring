@@ -2,10 +2,13 @@ package org.backend.spring.services;
 
 import org.backend.spring.actions.filters.Filter;
 
+import java.util.Optional;
+
 public interface DataStorage<T> {
-    T getObject(Filter<T> filter);
-    void setObject(T object);
-    T[] getObjects(Filter<T> filter);
-    void addObject(T object);
-    boolean removeObject(Filter<T> filter);
+    T get(Filter<T> filter);
+    Optional<T> getOptional(Filter<T> filter);
+    void set(T object);
+    T[] getArray(Filter<T> filter);
+    void add(T object);
+    boolean remove(Filter<T> filter);
 }

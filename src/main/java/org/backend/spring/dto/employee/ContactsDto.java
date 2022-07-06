@@ -1,4 +1,4 @@
-package org.backend.spring.dto;
+package org.backend.spring.dto.employee;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

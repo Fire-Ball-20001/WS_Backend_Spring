@@ -1,4 +1,4 @@
-package org.backend.spring.dto;
+package org.backend.spring.dto.post;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class PartPostDto {
+public class PostNoIdDto {
     @NonNull
     private String name;
 }

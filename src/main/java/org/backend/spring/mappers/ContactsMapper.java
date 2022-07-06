@@ -1,6 +1,6 @@
 package org.backend.spring.mappers;
 
-import org.backend.spring.dto.ContactsDto;
+import org.backend.spring.dto.employee.ContactsDto;
 import org.backend.spring.models.Contacts;
 import org.mapstruct.Mapper;
 

@@ -1,20 +1,16 @@
-package org.backend.spring.services.files;
+package org.backend.spring.services.files.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
-import org.backend.spring.actions.BinaryAction;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.dto.FullPostDto;
+import org.backend.spring.dto.post.PostDto;
 import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
-import org.backend.spring.mappers.MapperBase;
 import org.backend.spring.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
-import org.backend.spring.services.utils.PostUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.backend.spring.utils.PostUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -28,7 +24,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.backend.spring.services.utils.Files.deleteFileOrDirectory;
+import static org.backend.spring.utils.Files.deleteFileOrDirectory;
 
 @ConditionalOnProperty(prefix = "data",name = "source",havingValue = "files",matchIfMissing = true)
 @CommonsLog
@@ -36,8 +32,8 @@ import static org.backend.spring.services.utils.Files.deleteFileOrDirectory;
 @RequiredArgsConstructor
 public class FilePostStorage implements DataStorage<PostEmployee> {
 
-    private Map<UUID,PostEmployee> objects = new HashMap<>();
-    @Value("${data.path_posts}")
+    private Map<UUID,PostEmployee> posts = new HashMap<>();
+    @Value("${data.path-to-posts}")
     private String path_str;
     private final ObjectMapper objectMapper;
     private final PostMapper postMapper;
@@ -51,7 +47,7 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
         catch (RuntimeException e)
         {
             log.error("Error load post data");
-            objects = Arrays.stream(new PostEmployee[] {
+            posts = Arrays.stream(new PostEmployee[] {
                     new PostEmployee("Младший", UUID.randomUUID()),
                     new PostEmployee("Средний", UUID.randomUUID()),
                     new PostEmployee("Старший", UUID.randomUUID())
@@ -60,8 +56,8 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     }
 
     @Override
-    public PostEmployee getObject(Filter<PostEmployee> filter) {
-        Optional<PostEmployee> tempPostEmployee = objects.values().stream()
+    public PostEmployee get(Filter<PostEmployee> filter) {
+        Optional<PostEmployee> tempPostEmployee = posts.values().stream()
                 .filter(filter::match)
                 .findFirst();
         if(!tempPostEmployee.isPresent())
@@ -76,49 +72,57 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     }
 
     @Override
-    public void setObject(PostEmployee object) {
-        if(!objects.containsKey(object.getId()))
+    public Optional<PostEmployee> getOptional(Filter<PostEmployee> filter) {
+        return posts.values().stream()
+                .filter(filter::match)
+                .findFirst();
+    }
+
+    @Override
+    public void set(PostEmployee object) {
+        if(!posts.containsKey(object.getId()))
         {
             throw new NotFoundException("Not found post object.");
         }
-        event.call(objects.get(object.getId()),object);
-        objects.replace(object.getId(),object);
+        event.call(posts.get(object.getId()),object);
+        posts.replace(object.getId(),object);
+        saveData();
+    }
+
+    public PostEmployee[] getArray(Filter<PostEmployee> filter) {
+        return posts.values().stream().filter(filter::match).toArray(PostEmployee[]::new);
+    }
+
+    @Override
+    public void add(PostEmployee object) {
+        posts.put(object.getId(),object);
         saveData();
     }
 
     @Override
-    public PostEmployee[] getObjects(Filter<PostEmployee> filter) {
-        return objects.values().stream().filter(filter::match).toArray(PostEmployee[]::new);
-    }
-
-    @Override
-    public void addObject(PostEmployee object) {
-        objects.put(object.getId(),object);
-        saveData();
-    }
-
-    @Override
-    public boolean removeObject(Filter<PostEmployee> filter) {
-        if(objects.values().stream().noneMatch(filter::matchStrictly))
+    public boolean remove(Filter<PostEmployee> filter) {
+        if(posts.values().stream().noneMatch(filter::matchStrictly))
         {
             throw new NotFoundException("Not found post object.");
         }
         for (PostEmployee post:
-             objects.values().toArray(new PostEmployee[0])) {
+             posts.values().toArray(new PostEmployee[0])) {
             if(filter.matchStrictly(post) && !filter.matchStrictly(PostUtils.getDefaultPost()))
             {
                 event.call(post,PostUtils.getDefaultPost());
-                objects.remove(post.getId());
+                posts.remove(post.getId());
             }
         }
         saveData();
         return true;
     }
 
+
+
     private void loadData()
     {
         String posts_string;
-        FullPostDto[] posts;
+        PostDto[] posts;
         try(BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
             posts_string = fileReader.lines().collect(Collectors.joining("\n"));
         }
@@ -128,13 +132,13 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
         }
 
         try {
-            posts = objectMapper.readValue(posts_string, FullPostDto[].class);
+            posts = objectMapper.readValue(posts_string, PostDto[].class);
         }
         catch (Exception e)
         {
             throw new RuntimeException("Error loading data");
         }
-        objects = Arrays.stream(postMapper.toEntity(posts))
+        this.posts = Arrays.stream(postMapper.toEntity(posts))
                 .collect(
                         Collectors.toMap(PostEmployee::getId,Function.identity()));
     }
@@ -142,16 +146,16 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     private void saveData()
     {
         String posts_string;
-        FullPostDto[] posts;
+        PostDto[] posts;
         if(!deleteFileOrDirectory(new File(path_str)))
         {
             throw new RuntimeException("Error save posts data");
         }
-        if(objects.size() == 0)
+        if(this.posts.size() == 0)
         {
             return;
         }
-        posts = postMapper.toDto(objects.values().toArray(new PostEmployee[0]));
+        posts = postMapper.toDto(this.posts.values().toArray(new PostEmployee[0]));
         try(FileWriter fw = new FileWriter(path_str))
         {
             fw.write(objectMapper.writeValueAsString(posts));

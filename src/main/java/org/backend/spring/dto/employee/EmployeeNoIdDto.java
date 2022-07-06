@@ -1,14 +1,13 @@
-package org.backend.spring.dto;
+package org.backend.spring.dto.employee;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.backend.spring.models.Contacts;
 import org.backend.spring.models.JobType;
 
 @Builder
 @Getter
-public class PartEmployeeDto {
+public class EmployeeNoIdDto {
     @NonNull
     private String firstName;
     @NonNull
@@ -26,7 +25,7 @@ public class PartEmployeeDto {
     @NonNull
     private JobType jobType;
 
-    public PartEmployeeDto(@NonNull String firstName, @NonNull String lastName, String description, @NonNull String postId, String image, @NonNull String[] characteristics, @NonNull ContactsDto contacts, @NonNull JobType jobType) {
+    public EmployeeNoIdDto(@NonNull String firstName, @NonNull String lastName, String description, @NonNull String postId, String image, @NonNull String[] characteristics, @NonNull ContactsDto contacts, @NonNull JobType jobType) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.description = (description == null ? "" : description);

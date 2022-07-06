@@ -1,17 +1,15 @@
-package org.backend.spring.dto;
+package org.backend.spring.dto.employee;
 
-import io.swagger.v3.oas.models.info.Contact;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.backend.spring.models.Contacts;
 import org.backend.spring.models.JobType;
 
 import java.util.UUID;
 
 @Builder
 @Getter
-public class FullEmployeeDto {
+public class EmployeeDto {
     @NonNull
     private final UUID id;
     @NonNull
@@ -32,7 +30,7 @@ public class FullEmployeeDto {
     private ContactsDto contacts;
 
 
-    public FullEmployeeDto(@NonNull UUID id, @NonNull String firstName, @NonNull String lastName, String description, @NonNull String postId, String image, @NonNull String[] characteristics, @NonNull JobType jobType, @NonNull ContactsDto contacts) {
+    public EmployeeDto(@NonNull UUID id, @NonNull String firstName, @NonNull String lastName, String description, @NonNull String postId, String image, @NonNull String[] characteristics, @NonNull JobType jobType, @NonNull ContactsDto contacts) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

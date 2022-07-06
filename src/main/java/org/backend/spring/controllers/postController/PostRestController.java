@@ -1,4 +1,4 @@
-package org.backend.spring.controllers;
+package org.backend.spring.controllers.postController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,8 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.backend.spring.actions.filters.PostFilter;
 import org.backend.spring.dto.FilterDto;
-import org.backend.spring.dto.FullPostDto;
-import org.backend.spring.dto.PartPostDto;
+import org.backend.spring.dto.post.PostDto;
+import org.backend.spring.dto.post.PostNoIdDto;
 import org.backend.spring.mappers.FilterMapper;
 import org.backend.spring.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
@@ -80,15 +80,15 @@ public class PostRestController {
                     content = @Content(
                             mediaType = "application/json",
                             array = @ArraySchema(
-                                    schema = @Schema(implementation = FullPostDto.class)
+                                    schema = @Schema(implementation = PostDto.class)
                             )
                     )
             )
     })
-    public FullPostDto getPost(FilterDto filter)
+    public PostDto getPost(FilterDto filter)
     {
         PostFilter postFilter = filterMapper.toPostEntity(filter);
-        return postMapper.toDto(storage.getObject(postFilter));
+        return postMapper.toDto(storage.get(postFilter));
     }
     @GetMapping("/posts")
     @Operation(summary = "Get more posts with filter",tags = "Post")
@@ -137,10 +137,10 @@ public class PostRestController {
                     description = "Find more posts"
             )
     })
-    public FullPostDto[] getPosts(FilterDto filter)
+    public PostDto[] getPosts(FilterDto filter)
     {
         PostFilter postFilter = filterMapper.toPostEntity(filter);
-        return postMapper.toDto(storage.getObjects(postFilter));
+        return postMapper.toDto(storage.getArray(postFilter));
     }
 
     @PostMapping("/post/set")
@@ -187,10 +187,10 @@ public class PostRestController {
                     )
             )
     })
-    public ObjectNode setPost(@RequestBody FullPostDto postDto)
+    public ObjectNode setPost(@RequestBody PostDto postDto)
     {
         PostEmployee postEmployee = postMapper.toEntity(postDto);
-        storage.setObject(postEmployee);
+        storage.set(postEmployee);
         return objectMapper.createObjectNode().put("id",postEmployee.getId().toString());
     }
 
@@ -229,10 +229,10 @@ public class PostRestController {
                     )
             )
     })
-    public ObjectNode addPost(@RequestBody PartPostDto partPostDto)
+    public ObjectNode addPost(@RequestBody PostNoIdDto postNoIdDto)
     {
-        PostEmployee postEmployee = postMapper.toEntity(partPostDto);
-        storage.addObject(postEmployee);
+        PostEmployee postEmployee = postMapper.toEntity(postNoIdDto);
+        storage.add(postEmployee);
 
         return objectMapper.createObjectNode().put("id",postEmployee.getId().toString());
     }
@@ -283,7 +283,7 @@ public class PostRestController {
     public ObjectNode removePost(@RequestBody FilterDto filterDto)
     {
         PostFilter filter = filterMapper.toPostEntity(filterDto);
-        boolean status = storage.removeObject(filter);
+        boolean status = storage.remove(filter);
         return objectMapper.createObjectNode().put("status",status);
     }
 }
