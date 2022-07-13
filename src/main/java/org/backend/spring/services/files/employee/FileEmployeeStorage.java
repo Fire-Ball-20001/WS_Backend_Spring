@@ -3,18 +3,15 @@ package org.backend.spring.services.files.employee;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
-import org.backend.spring.actions.filters.EmployeeFilter;
+import org.backend.spring.actions.Action;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.actions.filters.PostFilter;
 import org.backend.spring.dto.employee.EmployeeDto;
 import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
-import org.backend.spring.mappers.EmployeeMapper;
+import org.backend.spring.controllers.mappers.EmployeeMapper;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
-import org.backend.spring.services.files.post.FilePostStorage;
-import org.backend.spring.utils.PostUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -29,7 +26,7 @@ import java.util.stream.Collectors;
 
 import static org.backend.spring.utils.Files.deleteFileOrDirectory;
 
-@ConditionalOnProperty(prefix = "data",name = "source",havingValue = "files",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "data", name = "source", havingValue = "files", matchIfMissing = true)
 @Component
 @CommonsLog
 @RequiredArgsConstructor
@@ -39,19 +36,15 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     private String path_str;
     private final ObjectMapper objectMapper;
     private final EmployeeMapper employeeMapper;
-    private final FilePostStorage postStorage;
-    private final BinaryEvent<PostEmployee,PostEmployee> event;
-
+    private final Action<String,PostEmployee> getPost;
+    private final BinaryEvent<PostEmployee, PostEmployee> event;
 
 
     @PostConstruct
-    private void postConstructor()
-    {
-        try{
+    private void postConstructor() {
+        try {
             loadData();
-        }
-        catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             log.error("Error load employees data");
         }
         event.addListener(this::updateEmployees);
@@ -62,8 +55,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         Optional<Employee> tempPostEmployee = employees.values().stream()
                 .filter(filter::match)
                 .findFirst();
-        if(!tempPostEmployee.isPresent())
-        {
+        if (!tempPostEmployee.isPresent()) {
             throw new NotFoundException("Not found employee object.");
         }
         return tempPostEmployee.get();
@@ -77,13 +69,12 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     }
 
     @Override
-    public void set(Employee object) {
+    public void set(Employee argument) {
 
-        if(!employees.containsKey(object.getId()))
-        {
+        if (!employees.containsKey(argument.getId())) {
             throw new NotFoundException("Not found employee object");
         }
-        employees.replace(object.getId(),object);
+        employees.replace(argument.getId(), argument);
         saveData();
     }
 
@@ -93,21 +84,19 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     }
 
     @Override
-    public void add(Employee object) {
-        employees.put(object.getId(),object);
+    public void add(Employee argument) {
+        employees.put(argument.getId(), argument);
         saveData();
     }
 
     @Override
     public boolean remove(Filter<Employee> filter) {
-        if(employees.values().stream().noneMatch(filter::match))
-        {
+        if (employees.values().stream().noneMatch(filter::match)) {
             throw new NotFoundException("Not found employee object.");
         }
-        for (Employee employee:
+        for (Employee employee :
                 employees.values().toArray(new Employee[0])) {
-            if(filter.matchStrictly(employee))
-            {
+            if (filter.match(employee)) {
                 employees.remove(employee.getId());
             }
         }
@@ -115,20 +104,11 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         return true;
     }
 
-    private Void updateEmployees(PostEmployee old, PostEmployee newPost)
-    {
+    private Void updateEmployees(PostEmployee old, PostEmployee newPost) {
         Employee[] employees = getArray(
-                EmployeeFilter.builder()
-                        .postFilter(
-                                PostFilter
-                                        .builder()
-                                        .id(old
-                                                .getId().
-                                                toString())
-                                        .build())
-                        .build());
-        for(Employee employee : employees)
-        {
+                new Filter<Employee>().addOperation(
+                        (Employee employee) -> employee.getPost().getId().equals(old.getId())));
+        for (Employee employee : employees) {
             employee.setPost(newPost);
             set(employee);
         }
@@ -136,62 +116,46 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     }
 
 
-    private void loadData()
-    {
+    private void loadData() {
         String employees_string;
         EmployeeDto[] employees;
-        try(BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
             employees_string = fileReader.lines().collect(Collectors.joining("\n"));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Error loading data");
         }
 
         try {
             employees = objectMapper.readValue(employees_string, EmployeeDto[].class);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Error loading data");
         }
         this.employees = new HashMap<>();
-        for(EmployeeDto dto : employees)
-        {
+        for (EmployeeDto dto : employees) {
             Employee employee = employeeMapper.toEntity(
                     dto,
-                    postStorage.getOptional(
-                            PostFilter.builder()
-                                    .id(dto.getPostId())
-                                    .build()).orElseGet(PostUtils::getDefaultPost));
-            this.employees.put(employee.getId(),employee);
+                    getPost.execute(dto.getPostId()));
+            this.employees.put(employee.getId(), employee);
         }
     }
 
-    private void saveData()
-    {
+    private void saveData() {
         List<EmployeeDto> employees = new ArrayList<>();
-        if(!deleteFileOrDirectory(new File(path_str)))
-        {
+        if (!deleteFileOrDirectory(new File(path_str))) {
             throw new RuntimeException("Error save employees data");
         }
-        if(this.employees.size() == 0)
-        {
+        if (this.employees.size() == 0) {
             return;
         }
-        for(Employee object: this.employees.values())
-        {
-            employees.add(employeeMapper.toDto(object,object.getPost().getId().toString()));
+        for (Employee object : this.employees.values()) {
+            employees.add(employeeMapper.toDto(object, object.getPost().getId().toString()));
         }
-        try(FileWriter fw = new FileWriter(path_str))
-        {
+        try (FileWriter fw = new FileWriter(path_str)) {
             fw.write(
                     objectMapper.writeValueAsString(employees.toArray(new EmployeeDto[0])));
             fw.flush();
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Error save employees data ",e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error save employees data ", e);
         }
     }
 

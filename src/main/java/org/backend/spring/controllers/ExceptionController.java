@@ -30,8 +30,7 @@ public class ExceptionController {
                     }
             )
     })
-    protected ResponseEntity<ExceptionResponse> notFoundError(NotFoundException ex, WebRequest request)
-    {
+    protected ResponseEntity<ExceptionResponse> notFoundError(NotFoundException ex, WebRequest request) {
         ExceptionResponse error = new ExceptionResponse(ex.getMessage(), ExcepResponseType.NOT_FOUND);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }

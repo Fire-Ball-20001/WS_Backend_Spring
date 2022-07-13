@@ -8,15 +8,14 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 @Component("updatePostEvent")
-public class UpdatePostsEvent implements BinaryEvent<PostEmployee,PostEmployee>{
+public class UpdatePostsEvent implements BinaryEvent<PostEmployee, PostEmployee> {
 
     private final List<BiFunction<PostEmployee, PostEmployee, Void>> listeners = new ArrayList<>();
 
     @Override
     public void call(PostEmployee first, PostEmployee second) {
-        for(BiFunction<PostEmployee, PostEmployee, Void> listener : listeners)
-        {
-            listener.apply(first,second);
+        for (BiFunction<PostEmployee, PostEmployee, Void> listener : listeners) {
+            listener.apply(first, second);
         }
     }
 

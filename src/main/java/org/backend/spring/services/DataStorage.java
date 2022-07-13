@@ -6,9 +6,14 @@ import java.util.Optional;
 
 public interface DataStorage<T> {
     T get(Filter<T> filter);
+
     Optional<T> getOptional(Filter<T> filter);
-    void set(T object);
+
+    void set(T argument);
+
     T[] getArray(Filter<T> filter);
-    void add(T object);
+
+    void add(T argument);
+
     boolean remove(Filter<T> filter);
 }

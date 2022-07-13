@@ -7,7 +7,7 @@ import org.backend.spring.actions.filters.Filter;
 import org.backend.spring.dto.post.PostDto;
 import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
-import org.backend.spring.mappers.PostMapper;
+import org.backend.spring.controllers.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
 import org.backend.spring.utils.PostUtils;
@@ -26,28 +26,26 @@ import java.util.stream.Collectors;
 
 import static org.backend.spring.utils.Files.deleteFileOrDirectory;
 
-@ConditionalOnProperty(prefix = "data",name = "source",havingValue = "files",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "data", name = "source", havingValue = "files", matchIfMissing = true)
 @CommonsLog
 @Component
 @RequiredArgsConstructor
 public class FilePostStorage implements DataStorage<PostEmployee> {
 
-    private Map<UUID,PostEmployee> posts = new HashMap<>();
+    private Map<UUID, PostEmployee> posts = new HashMap<>();
     @Value("${data.path-to-posts}")
     private String path_str;
     private final ObjectMapper objectMapper;
     private final PostMapper postMapper;
-    private final BinaryEvent<PostEmployee,PostEmployee> event;
+    private final BinaryEvent<PostEmployee, PostEmployee> event;
+
     @PostConstruct
-    private void postConstruct()
-    {
-        try{
+    private void postConstruct() {
+        try {
             loadData();
-        }
-        catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             log.error("Error load post data");
-            posts = Arrays.stream(new PostEmployee[] {
+            posts = Arrays.stream(new PostEmployee[]{
                     new PostEmployee("Младший", UUID.randomUUID()),
                     new PostEmployee("Средний", UUID.randomUUID()),
                     new PostEmployee("Старший", UUID.randomUUID())
@@ -60,10 +58,8 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
         Optional<PostEmployee> tempPostEmployee = posts.values().stream()
                 .filter(filter::match)
                 .findFirst();
-        if(!tempPostEmployee.isPresent())
-        {
-            if(filter.match(PostUtils.getDefaultPost()))
-            {
+        if (!tempPostEmployee.isPresent()) {
+            if (filter.match(PostUtils.getDefaultPost())) {
                 return PostUtils.getDefaultPost();
             }
             throw new NotFoundException("Not found post object.");
@@ -79,13 +75,12 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     }
 
     @Override
-    public void set(PostEmployee object) {
-        if(!posts.containsKey(object.getId()))
-        {
+    public void set(PostEmployee argument) {
+        if (!posts.containsKey(argument.getId())) {
             throw new NotFoundException("Not found post object.");
         }
-        event.call(posts.get(object.getId()),object);
-        posts.replace(object.getId(),object);
+        event.call(posts.get(argument.getId()), argument);
+        posts.replace(argument.getId(), argument);
         saveData();
     }
 
@@ -94,22 +89,20 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     }
 
     @Override
-    public void add(PostEmployee object) {
-        posts.put(object.getId(),object);
+    public void add(PostEmployee argument) {
+        posts.put(argument.getId(), argument);
         saveData();
     }
 
     @Override
     public boolean remove(Filter<PostEmployee> filter) {
-        if(posts.values().stream().noneMatch(filter::matchStrictly))
-        {
+        if (posts.values().stream().noneMatch(filter::match)) {
             throw new NotFoundException("Not found post object.");
         }
-        for (PostEmployee post:
-             posts.values().toArray(new PostEmployee[0])) {
-            if(filter.matchStrictly(post) && !filter.matchStrictly(PostUtils.getDefaultPost()))
-            {
-                event.call(post,PostUtils.getDefaultPost());
+        for (PostEmployee post :
+                posts.values().toArray(new PostEmployee[0])) {
+            if (filter.match(post) && !filter.match(PostUtils.getDefaultPost())) {
+                event.call(post, PostUtils.getDefaultPost());
                 posts.remove(post.getId());
             }
         }
@@ -118,52 +111,40 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     }
 
 
-
-    private void loadData()
-    {
+    private void loadData() {
         String posts_string;
         PostDto[] posts;
-        try(BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
             posts_string = fileReader.lines().collect(Collectors.joining("\n"));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Error loading data");
         }
 
         try {
             posts = objectMapper.readValue(posts_string, PostDto[].class);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Error loading data");
         }
         this.posts = Arrays.stream(postMapper.toEntity(posts))
                 .collect(
-                        Collectors.toMap(PostEmployee::getId,Function.identity()));
+                        Collectors.toMap(PostEmployee::getId, Function.identity()));
     }
 
-    private void saveData()
-    {
+    private void saveData() {
         String posts_string;
         PostDto[] posts;
-        if(!deleteFileOrDirectory(new File(path_str)))
-        {
+        if (!deleteFileOrDirectory(new File(path_str))) {
             throw new RuntimeException("Error save posts data");
         }
-        if(this.posts.size() == 0)
-        {
+        if (this.posts.size() == 0) {
             return;
         }
         posts = postMapper.toDto(this.posts.values().toArray(new PostEmployee[0]));
-        try(FileWriter fw = new FileWriter(path_str))
-        {
+        try (FileWriter fw = new FileWriter(path_str)) {
             fw.write(objectMapper.writeValueAsString(posts));
             fw.flush();
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Error save posts data ",e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error save posts data ", e);
         }
     }
 

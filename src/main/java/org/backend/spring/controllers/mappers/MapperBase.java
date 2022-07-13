@@ -1,4 +1,4 @@
-package org.backend.spring.mappers;
+package org.backend.spring.controllers.mappers;
 
 import org.mapstruct.factory.Mappers;
 import org.springframework.context.annotation.Bean;
@@ -7,20 +7,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class MapperBase {
     @Bean
-    public EmployeeMapper getEmployeeMapper()
-    {
+    public EmployeeMapper getEmployeeMapper() {
         return Mappers.getMapper(EmployeeMapper.class);
     }
+
     @Bean
-    public FilterMapper getFilterMapper() {return Mappers.getMapper(FilterMapper.class);}
-    @Bean
-    public PostMapper getPostMapper()
-    {
+    public PostMapper getPostMapper() {
         return Mappers.getMapper(PostMapper.class);
     }
+
     @Bean
-    public ContactsMapper getContactsMapper()
-    {
+    public ContactsMapper getContactsMapper() {
         return Mappers.getMapper(ContactsMapper.class);
     }
 }

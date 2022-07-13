@@ -12,14 +12,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.backend.spring.actions.filters.PostFilter;
+import org.backend.spring.actions.filters.Filter;
 import org.backend.spring.dto.FilterDto;
 import org.backend.spring.dto.post.PostDto;
 import org.backend.spring.dto.post.PostNoIdDto;
-import org.backend.spring.mappers.FilterMapper;
-import org.backend.spring.mappers.PostMapper;
+import org.backend.spring.controllers.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
 import org.backend.spring.services.DataStorage;
+import org.backend.spring.utils.FilterUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,17 +30,16 @@ public class PostRestController {
     DataStorage<PostEmployee> storage;
     PostMapper postMapper;
     ObjectMapper objectMapper;
-    FilterMapper filterMapper;
 
     @GetMapping("/post")
-    @Operation(summary = "Get one post with filter",tags = "Post")
+    @Operation(summary = "Get one post with filter", tags = "Post")
     @Parameters(value = {
             @Parameter(
                     name = "filter",
                     hidden = true
             ),
             @Parameter(
-                    name="postId",
+                    name = "postId",
                     allowEmptyValue = true,
                     in = ParameterIn.QUERY,
                     content = {
@@ -50,7 +49,7 @@ public class PostRestController {
                     }
             ),
             @Parameter(
-                    name="postName",
+                    name = "postName",
                     allowEmptyValue = true,
                     in = ParameterIn.QUERY,
                     content = {
@@ -60,7 +59,7 @@ public class PostRestController {
                     }
             ),
             @Parameter(
-                    name="isStrictly",
+                    name = "isStrictly",
                     allowEmptyValue = true,
                     in = ParameterIn.QUERY,
                     content = {
@@ -85,20 +84,20 @@ public class PostRestController {
                     )
             )
     })
-    public PostDto getPost(FilterDto filter)
-    {
-        PostFilter postFilter = filterMapper.toPostEntity(filter);
+    public PostDto getPost(FilterDto filter) {
+        Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(filter);
         return postMapper.toDto(storage.get(postFilter));
     }
+
     @GetMapping("/posts")
-    @Operation(summary = "Get more posts with filter",tags = "Post")
+    @Operation(summary = "Get more posts with filter", tags = "Post")
     @Parameters(value = {
             @Parameter(
                     name = "filter",
                     hidden = true
             ),
             @Parameter(
-                    name="postId",
+                    name = "postId",
                     allowEmptyValue = true,
                     in = ParameterIn.QUERY,
                     content = {
@@ -108,7 +107,7 @@ public class PostRestController {
                     }
             ),
             @Parameter(
-                    name="postName",
+                    name = "postName",
                     allowEmptyValue = true,
                     in = ParameterIn.QUERY,
                     content = {
@@ -118,7 +117,7 @@ public class PostRestController {
                     }
             ),
             @Parameter(
-                    name="isStrictly",
+                    name = "isStrictly",
                     allowEmptyValue = true,
                     in = ParameterIn.QUERY,
                     content = {
@@ -137,14 +136,13 @@ public class PostRestController {
                     description = "Find more posts"
             )
     })
-    public PostDto[] getPosts(FilterDto filter)
-    {
-        PostFilter postFilter = filterMapper.toPostEntity(filter);
+    public PostDto[] getPosts(FilterDto filter) {
+        Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(filter);
         return postMapper.toDto(storage.getArray(postFilter));
     }
 
     @PostMapping("/post/set")
-    @Operation(summary = "Replace post",tags = "Post")
+    @Operation(summary = "Replace post", tags = "Post")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {
             @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -157,7 +155,7 @@ public class PostRestController {
                     hidden = true
             ),
             @Parameter(
-                    name="id",
+                    name = "id",
                     required = true,
                     in = ParameterIn.DEFAULT,
                     content = {
@@ -167,7 +165,7 @@ public class PostRestController {
                     }
             ),
             @Parameter(
-                    name="name",
+                    name = "name",
                     required = true,
                     in = ParameterIn.DEFAULT,
                     content = {
@@ -187,16 +185,15 @@ public class PostRestController {
                     )
             )
     })
-    public ObjectNode setPost(@RequestBody PostDto postDto)
-    {
+    public ObjectNode setPost(@RequestBody PostDto postDto) {
         PostEmployee postEmployee = postMapper.toEntity(postDto);
         storage.set(postEmployee);
-        return objectMapper.createObjectNode().put("id",postEmployee.getId().toString());
+        return objectMapper.createObjectNode().put("id", postEmployee.getId().toString());
     }
 
     @PostMapping("/post/add")
     @ResponseBody
-    @Operation(summary = "Add new post",tags = "Post")
+    @Operation(summary = "Add new post", tags = "Post")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {
             @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -209,7 +206,7 @@ public class PostRestController {
                     hidden = true
             ),
             @Parameter(
-                    name="name",
+                    name = "name",
                     required = true,
                     in = ParameterIn.DEFAULT,
                     content = {
@@ -229,16 +226,15 @@ public class PostRestController {
                     )
             )
     })
-    public ObjectNode addPost(@RequestBody PostNoIdDto postNoIdDto)
-    {
+    public ObjectNode addPost(@RequestBody PostNoIdDto postNoIdDto) {
         PostEmployee postEmployee = postMapper.toEntity(postNoIdDto);
         storage.add(postEmployee);
 
-        return objectMapper.createObjectNode().put("id",postEmployee.getId().toString());
+        return objectMapper.createObjectNode().put("id", postEmployee.getId().toString());
     }
 
     @DeleteMapping("/post/remove")
-    @Operation(summary = "Remove post with strictly filter",tags = "Post")
+    @Operation(summary = "Remove post with strictly filter", tags = "Post")
 
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {
             @Content(
@@ -252,7 +248,7 @@ public class PostRestController {
                     hidden = true
             ),
             @Parameter(
-                    name="postId",
+                    name = "postId",
                     in = ParameterIn.DEFAULT,
                     content = {
                             @Content(
@@ -261,7 +257,7 @@ public class PostRestController {
                     }
             ),
             @Parameter(
-                    name="postName",
+                    name = "postName",
                     in = ParameterIn.DEFAULT,
                     content = {
                             @Content(
@@ -280,10 +276,10 @@ public class PostRestController {
                     )
             )
     })
-    public ObjectNode removePost(@RequestBody FilterDto filterDto)
-    {
-        PostFilter filter = filterMapper.toPostEntity(filterDto);
-        boolean status = storage.remove(filter);
-        return objectMapper.createObjectNode().put("status",status);
+    public ObjectNode removePost(@RequestBody FilterDto filterDto) {
+        filterDto.isStrictly = true;
+        Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(filterDto);
+        boolean status = storage.remove(postFilter);
+        return objectMapper.createObjectNode().put("status", status);
     }
 }

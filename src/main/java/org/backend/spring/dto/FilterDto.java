@@ -3,6 +3,7 @@ package org.backend.spring.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.backend.spring.models.JobType;
 
 @Getter
 @Setter
@@ -18,6 +19,7 @@ public class FilterDto {
     private String phone;
     private String email;
     private String workEmail;
+    private JobType jobType;
     public Boolean isStrictly = false;
 
 }

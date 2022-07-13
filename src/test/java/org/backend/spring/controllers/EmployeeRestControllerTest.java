@@ -2,7 +2,6 @@ package org.backend.spring.controllers;
 
 import org.assertj.core.util.Lists;
 import org.backend.spring.dto.FilterDto;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,20 +23,19 @@ class EmployeeRestControllerTest {
         //Assert
     }
 
-    private List<Arguments> getFilters()
-    {
+    private List<Arguments> getFilters() {
         return Lists.newArrayList(
                 Arguments.of(FilterDto.builder()
                         .firstName("Test")
-                                .isStrictly(true)
+                        .isStrictly(true)
                         .build()),
                 Arguments.of(FilterDto.builder()
                         .lastName("Test_2")
-                                .isStrictly(true)
+                        .isStrictly(true)
                         .build()),
                 Arguments.of(FilterDto.builder()
                         .postId("Test")
-                                .isStrictly(true)
+                        .isStrictly(true)
                         .build())
         );
     }
