@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Employee {
-    private final UUID id;
+    private UUID id;
     private String firstName;
     private String lastName;
     private String description;

@@ -6,12 +6,14 @@ import org.backend.spring.models.PostEmployee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.UUID;
+
 @Mapper
 public interface PostMapper {
     PostEmployee toEntity(PostDto dto);
 
-    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
-    PostEmployee toEntity(PostNoIdDto dto);
+    @Mapping(target = "id", source = "id")
+    PostEmployee toEntity(PostNoIdDto dto, UUID id);
 
     PostDto toDto(PostEmployee post);
 
