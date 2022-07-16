@@ -1,4 +1,4 @@
-package org.backend.spring.dto.post;
+package org.backend.spring.controllers.dto.post;
 
 import lombok.Builder;
 import lombok.Getter;

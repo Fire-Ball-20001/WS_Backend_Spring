@@ -1,7 +1,7 @@
 package org.backend.spring.utils;
 
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.dto.FilterDto;
+import org.backend.spring.controllers.dto.FilterDto;
 import org.backend.spring.models.Contacts;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;

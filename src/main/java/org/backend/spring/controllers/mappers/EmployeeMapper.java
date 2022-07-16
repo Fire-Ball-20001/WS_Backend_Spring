@@ -1,7 +1,8 @@
 package org.backend.spring.controllers.mappers;
 
-import org.backend.spring.dto.employee.EmployeeDto;
-import org.backend.spring.dto.employee.EmployeeNoIdDto;
+import org.backend.spring.controllers.dto.employee.EmployeeDto;
+import org.backend.spring.controllers.dto.employee.EmployeeNoIdDto;
+import org.backend.spring.controllers.dto.employee.EmployeeNoIdUsePostIdDto;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;
 import org.mapstruct.Mapper;
@@ -11,14 +12,13 @@ import java.util.UUID;
 
 @Mapper
 public interface EmployeeMapper {
-    @Mapping(target = "post", source = "post")
-    @Mapping(target = "id", source = "dto.id")
-    Employee toEntity(EmployeeDto dto, PostEmployee post);
+    Employee toEntity(EmployeeDto dto);
 
     @Mapping(target = "post", source = "post")
     @Mapping(target = "id", source = "id")
-    Employee toEntity(EmployeeNoIdDto dto, PostEmployee post, UUID id);
+    Employee toEntity(EmployeeNoIdUsePostIdDto dto, PostEmployee post, UUID id);
+    @Mapping(target = "id", source = "id")
+    Employee toEntity(EmployeeNoIdDto dto, UUID id);
 
-    @Mapping(target = "postId", source = "postId")
-    EmployeeDto toDto(Employee object, String postId);
+    EmployeeDto toDto(Employee object);
 }

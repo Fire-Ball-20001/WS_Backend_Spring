@@ -1,4 +1,4 @@
-package org.backend.spring.dto;
+package org.backend.spring.controllers.dto;
 
 import lombok.Builder;
 import lombok.Getter;

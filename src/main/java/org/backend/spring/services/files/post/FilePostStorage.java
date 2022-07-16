@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.dto.post.PostDto;
+import org.backend.spring.controllers.dto.post.PostDto;
 import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.controllers.mappers.PostMapper;
@@ -34,7 +34,7 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
 
     private Map<UUID, PostEmployee> posts = new HashMap<>();
     @Value("${data.path-to-posts}")
-    private String path_str;
+    private final String pathStr;
     private final ObjectMapper objectMapper;
     private final PostMapper postMapper;
     private final BinaryEvent<PostEmployee, PostEmployee> event;
@@ -114,7 +114,7 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     private void loadData() {
         String posts_string;
         PostDto[] posts;
-        try (BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(pathStr))) {
             posts_string = fileReader.lines().collect(Collectors.joining("\n"));
         } catch (Exception e) {
             throw new RuntimeException("Error loading data");
@@ -133,14 +133,14 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     private void saveData() {
         String posts_string;
         PostDto[] posts;
-        if (!deleteFileOrDirectory(new File(path_str))) {
+        if (!deleteFileOrDirectory(new File(pathStr))) {
             throw new RuntimeException("Error save posts data");
         }
         if (this.posts.size() == 0) {
             return;
         }
         posts = postMapper.toDto(this.posts.values().toArray(new PostEmployee[0]));
-        try (FileWriter fw = new FileWriter(path_str)) {
+        try (FileWriter fw = new FileWriter(pathStr)) {
             fw.write(objectMapper.writeValueAsString(posts));
             fw.flush();
         } catch (Exception e) {

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.backend.spring.actions.Action;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.dto.employee.EmployeeDto;
+import org.backend.spring.controllers.dto.employee.EmployeeDto;
 import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.controllers.mappers.EmployeeMapper;
@@ -33,7 +33,7 @@ import static org.backend.spring.utils.Files.deleteFileOrDirectory;
 public class FileEmployeeStorage implements DataStorage<Employee> {
     private Map<UUID, Employee> employees = new HashMap<>();
     @Value("${data.path-to-employees}")
-    private String path_str;
+    private final String pathStr;
     private final ObjectMapper objectMapper;
     private final EmployeeMapper employeeMapper;
     private final Action<String,PostEmployee> getPost;
@@ -119,7 +119,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     private void loadData() {
         String employees_string;
         EmployeeDto[] employees;
-        try (BufferedReader fileReader = new BufferedReader(new FileReader(path_str))) {
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(pathStr))) {
             employees_string = fileReader.lines().collect(Collectors.joining("\n"));
         } catch (Exception e) {
             throw new RuntimeException("Error loading data");
@@ -132,25 +132,24 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
         }
         this.employees = new HashMap<>();
         for (EmployeeDto dto : employees) {
-            Employee employee = employeeMapper.toEntity(
-                    dto,
-                    getPost.execute(dto.getPostId()));
+            Employee employee = employeeMapper.toEntity(dto);
+            employee.setPost(getPost.execute(employee.getPost().getId().toString()));
             this.employees.put(employee.getId(), employee);
         }
     }
 
     private void saveData() {
         List<EmployeeDto> employees = new ArrayList<>();
-        if (!deleteFileOrDirectory(new File(path_str))) {
+        if (!deleteFileOrDirectory(new File(pathStr))) {
             throw new RuntimeException("Error save employees data");
         }
         if (this.employees.size() == 0) {
             return;
         }
         for (Employee object : this.employees.values()) {
-            employees.add(employeeMapper.toDto(object, object.getPost().getId().toString()));
+            employees.add(employeeMapper.toDto(object));
         }
-        try (FileWriter fw = new FileWriter(path_str)) {
+        try (FileWriter fw = new FileWriter(pathStr)) {
             fw.write(
                     objectMapper.writeValueAsString(employees.toArray(new EmployeeDto[0])));
             fw.flush();

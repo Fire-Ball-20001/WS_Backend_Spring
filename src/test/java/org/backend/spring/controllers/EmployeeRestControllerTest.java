@@ -1,7 +1,7 @@
 package org.backend.spring.controllers;
 
 import org.assertj.core.util.Lists;
-import org.backend.spring.dto.FilterDto;
+import org.backend.spring.controllers.dto.FilterDto;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.springframework.beans.factory.annotation.Autowired;

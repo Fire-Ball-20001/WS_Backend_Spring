@@ -1,14 +1,14 @@
 package org.backend.spring.controllers.employeeController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.backend.spring.actions.Action;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.dto.FilterDto;
-import org.backend.spring.dto.employee.EmployeeDto;
-import org.backend.spring.dto.employee.EmployeeNoIdDto;
+import org.backend.spring.controllers.dto.FilterDto;
+import org.backend.spring.controllers.dto.employee.EmployeeDto;
+import org.backend.spring.controllers.dto.employee.EmployeeNoIdDto;
+import org.backend.spring.controllers.dto.employee.EmployeeNoIdUsePostIdDto;
 import org.backend.spring.controllers.mappers.MapperBase;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;
@@ -30,12 +30,12 @@ public class EmployeeRestController {
     Action<String, PostEmployee> getPostAction;
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get one employee, id can be partial.", tags = "Employee")
-    public EmployeeDto getEmployee(@PathVariable String id, FilterDto filter) {
-        filter.setId(id.toString());
-        Filter<Employee> employeeFilter = FilterUtils.parseEmployeeFilter(filter);
+    @Operation(summary = "Get one employee", tags = "Employee")
+    public EmployeeDto getEmployee(@PathVariable UUID id) {
+        Filter<Employee> employeeFilter = new Filter<>();
+        employeeFilter.addOperation((employee -> FilterUtils.isStrictlyMatch(id.toString(),employee.getId().toString())));
         Employee find = storage.get(employeeFilter);
-        return mapperBase.getEmployeeMapper().toDto(find, find.getPost().getId().toString());
+        return mapperBase.getEmployeeMapper().toDto(find);
     }
 
     @GetMapping("/list")
@@ -45,38 +45,38 @@ public class EmployeeRestController {
         Employee[] employees = storage.getArray(employeeFilter);
         return Arrays.stream(employees).map(
                         employee -> mapperBase.getEmployeeMapper()
-                                .toDto(employee, employee.getPost().getId().toString()))
+                                .toDto(employee))
                 .toArray(EmployeeDto[]::new);
     }
 
     @PostMapping("/{id}/set")
-    @Operation(summary = "Replace employee, id must exist.", tags = "Employee")
-    public ObjectNode setEmployee(@PathVariable UUID id,@RequestBody EmployeeNoIdDto employeeDto) {
+    @Operation(summary = "Replace employee", tags = "Employee")
+    public EmployeeDto setEmployee(@PathVariable UUID id,@RequestBody EmployeeNoIdUsePostIdDto employeeDto) {
         Employee employee = mapperBase.getEmployeeMapper().toEntity(
                 employeeDto,
                 getPostAction.execute(employeeDto.getPostId()),
                 id);
         storage.set(employee);
-        return objectMapper.createObjectNode().put("id", employee.getId().toString());
+        return mapperBase.getEmployeeMapper().toDto(employee);
     }
 
     @PostMapping("/add")
     @Operation(summary = "Add new employee", tags = "Employee")
-    public ObjectNode addEmployee(@RequestBody EmployeeNoIdDto employeeNoIdDto) {
+    public EmployeeDto addEmployee(@RequestBody EmployeeNoIdUsePostIdDto employeeNoIdDto) {
         Employee employee = mapperBase.getEmployeeMapper().toEntity(
                 employeeNoIdDto,
                 getPostAction.execute(employeeNoIdDto.getPostId()),
                 UUID.randomUUID());
         storage.add(employee);
-        return objectMapper.createObjectNode().put("id", employee.getId().toString());
+        return mapperBase.getEmployeeMapper().toDto(employee);
     }
 
     @PostMapping("/remove")
     @Operation(summary = "Remove employee with filter", tags = "Employee")
-    public ObjectNode removeEmployee(@RequestBody FilterDto filter) {
+    public void removeEmployee(@RequestBody FilterDto filter) {
         filter.isStrictly = true;
         Filter<Employee> employeeFilter = FilterUtils.parseEmployeeFilter(filter);
-        return objectMapper.createObjectNode().put("status", storage.remove(employeeFilter));
+        storage.remove(employeeFilter);
     }
 
 }
