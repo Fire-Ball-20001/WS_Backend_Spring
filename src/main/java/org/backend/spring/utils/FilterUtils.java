@@ -1,7 +1,9 @@
 package org.backend.spring.utils;
 
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.controllers.dto.FilterDto;
+import org.backend.spring.controllers.dto.filter.ContactsFilterDto;
+import org.backend.spring.controllers.dto.filter.EmployeeFilterDto;
+import org.backend.spring.controllers.dto.filter.PostFilterDto;
 import org.backend.spring.models.Contacts;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;
@@ -37,27 +39,35 @@ public class FilterUtils {
         });
     }
 
-    public static Filter<PostEmployee> parsePostFilter(FilterDto dto) {
+    public static Filter<PostEmployee> parsePostFilter(PostFilterDto dto) {
         Filter<PostEmployee> filter = new Filter<>();
+        if(dto == null)
+        {
+            return filter;
+        }
         BiFunction<String, String, Boolean> compareFunction;
         if (dto.isStrictly != null && dto.isStrictly) {
             compareFunction = FilterUtils::isStrictlyMatch;
         } else {
             compareFunction = FilterUtils::isApproximatelyMatch;
         }
-        if (dto.getPostName() != null) {
+        if (dto.getName() != null) {
             filter.addOperation(
-                    (PostEmployee post) -> compareFunction.apply(post.getName(), dto.getPostName()));
+                    (PostEmployee post) -> compareFunction.apply(post.getName(), dto.getName()));
         }
-        if (dto.getPostId() != null) {
+        if (dto.getId() != null) {
             filter.addOperation(
-                    (PostEmployee post) -> compareFunction.apply(post.getId().toString(), dto.getPostId()));
+                    (PostEmployee post) -> compareFunction.apply(post.getId().toString(), dto.getId()));
         }
         return filter;
     }
 
-    public static Filter<Contacts> parseContactsFilter(FilterDto dto) {
+    public static Filter<Contacts> parseContactsFilter(ContactsFilterDto dto) {
         Filter<Contacts> filter = new Filter<>();
+        if(dto == null)
+        {
+            return filter;
+        }
         BiFunction<String, String, Boolean> compareFunction;
         if (dto.isStrictly != null && dto.isStrictly) {
             compareFunction = FilterUtils::isStrictlyMatch;
@@ -79,8 +89,12 @@ public class FilterUtils {
         return filter;
     }
 
-    public static Filter<Employee> parseEmployeeFilter(FilterDto dto) {
+    public static Filter<Employee> parseEmployeeFilter(EmployeeFilterDto dto) {
         Filter<Employee> filter = new Filter<>();
+        if(dto == null)
+        {
+            return filter;
+        }
         BiFunction<String, String, Boolean> compareFunction;
         if (dto.isStrictly != null && dto.isStrictly) {
             compareFunction = FilterUtils::isStrictlyMatch;
@@ -112,9 +126,9 @@ public class FilterUtils {
                     (Employee employee) -> compareFunction.apply(employee.getJobType().toString(), dto.getJobType().toString()));
         }
         filter.addOperation(
-                (Employee employee) -> parsePostFilter(dto).match(employee.getPost()));
+                (Employee employee) -> parsePostFilter(dto.getPost()).match(employee.getPost()));
         filter.addOperation(
-                (Employee employee) -> parseContactsFilter(dto).match(employee.getContacts()));
+                (Employee employee) -> parseContactsFilter(dto.getContacts()).match(employee.getContacts()));
         return filter;
     }
 }

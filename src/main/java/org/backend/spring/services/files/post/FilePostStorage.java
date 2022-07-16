@@ -95,7 +95,7 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
     }
 
     @Override
-    public boolean remove(Filter<PostEmployee> filter) {
+    public void remove(Filter<PostEmployee> filter) {
         if (posts.values().stream().noneMatch(filter::match)) {
             throw new NotFoundException("Not found post object.");
         }
@@ -107,7 +107,6 @@ public class FilePostStorage implements DataStorage<PostEmployee> {
             }
         }
         saveData();
-        return true;
     }
 
 

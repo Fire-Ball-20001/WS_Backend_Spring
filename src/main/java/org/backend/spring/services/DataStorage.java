@@ -15,5 +15,5 @@ public interface DataStorage<T> {
 
     void add(T argument);
 
-    boolean remove(Filter<T> filter);
+    void remove(Filter<T> filter);
 }

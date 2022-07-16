@@ -1,19 +1,18 @@
 package org.backend.spring.controllers.postController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.controllers.dto.FilterDto;
+import org.backend.spring.controllers.dto.filter.EmployeeFilterDto;
+import org.backend.spring.controllers.dto.filter.PostFilterDto;
 import org.backend.spring.controllers.dto.post.PostDto;
 import org.backend.spring.controllers.dto.post.PostNoIdDto;
 import org.backend.spring.controllers.mappers.PostMapper;
@@ -35,97 +34,22 @@ public class PostRestController {
     ObjectMapper objectMapper;
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get one post, id can be partial.", tags = "Post")
-    @Parameters(value = {
-            @Parameter(
-                    name = "filter",
-                    hidden = true
-            )
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Find one post"
-            )
-    })
-    public PostDto getPost(@PathVariable String id, FilterDto filter) {
-        filter.setId(id);
-        Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(filter);
+    @Operation(summary = "Get one post", tags = "Post")
+    public PostDto getPost(@PathVariable UUID id) {
+        Filter<PostEmployee> postFilter = new Filter<>();
+        postFilter.addOperation((post) -> FilterUtils.isStrictlyMatch(id.toString(),post.toString()));
         return postMapper.toDto(storage.get(postFilter));
     }
 
     @GetMapping("/list")
     @Operation(summary = "Get more posts with filter", tags = "Post")
-    @Parameters(value = {
-            @Parameter(
-                    name = "filter",
-                    hidden = true
-            ),
-            @Parameter(
-                    name = "postId",
-                    allowEmptyValue = true,
-                    in = ParameterIn.QUERY,
-                    content = {
-                            @Content(
-                                    schema = @Schema(type = "string")
-                            )
-                    }
-            ),
-            @Parameter(
-                    name = "postName",
-                    allowEmptyValue = true,
-                    in = ParameterIn.QUERY,
-                    content = {
-                            @Content(
-                                    schema = @Schema(type = "string")
-                            )
-                    }
-            ),
-            @Parameter(
-                    name = "isStrictly",
-                    allowEmptyValue = true,
-                    in = ParameterIn.QUERY,
-                    content = {
-                            @Content(
-                                    schema = @Schema(
-                                            type = "boolean",
-                                            defaultValue = "false"
-                                    )
-                            )
-                    }
-            )
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Find more posts"
-            )
-    })
-    public PostDto[] getPosts(FilterDto filter) {
+    public PostDto[] getPosts(PostFilterDto filter) {
         Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(filter);
         return postMapper.toDto(storage.getArray(postFilter));
     }
 
     @PostMapping("/{id}/set")
     @Operation(summary = "Replace post", tags = "Post")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {
-            @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(example = "{\n\"name\":\"Example\"}")
-            )
-    })
-    @Parameters(value = {
-            @Parameter(
-                    name = "postDto",
-                    hidden = true
-            )
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Replace post"
-            )
-    })
     public PostDto setPost(@PathVariable UUID id, @RequestBody PostNoIdDto postDto) {
         PostEmployee postEmployee = postMapper.toEntity(postDto,id);
         storage.set(postEmployee);
@@ -135,24 +59,6 @@ public class PostRestController {
     @PostMapping("/add")
     @ResponseBody
     @Operation(summary = "Add new post", tags = "Post")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {
-            @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(example = "{\n\"name\":\"Example\"}")
-            )
-    })
-    @Parameters(value = {
-            @Parameter(
-                    name = "postNoIdDto",
-                    hidden = true
-            )
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Add new post"
-            )
-    })
     public PostDto addPost(@RequestBody PostNoIdDto postNoIdDto) {
         PostEmployee postEmployee = postMapper.toEntity(postNoIdDto, UUID.randomUUID());
         storage.add(postEmployee);
@@ -161,27 +67,8 @@ public class PostRestController {
 
     @PostMapping("/remove")
     @Operation(summary = "Remove post with filter", tags = "Post")
-
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {
-            @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(example = "{\n\"postId\":\"00000000-0000-0000-0000-000000000000\",\n\"postName\":\"Example\"}")
-            )
-    })
-    @Parameters(value = {
-            @Parameter(
-                    name = "filterDto",
-                    hidden = true
-            )
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Remove post"
-            )
-    })
-    public void removePost(@RequestBody FilterDto filterDto) {
-        Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(filterDto);
+    public void removePost(@RequestBody PostFilterDto postFilterDto) {
+        Filter<PostEmployee> postFilter = FilterUtils.parsePostFilter(postFilterDto);
         storage.remove(postFilter);
     }
 }

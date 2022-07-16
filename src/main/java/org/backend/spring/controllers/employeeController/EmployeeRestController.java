@@ -5,9 +5,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.backend.spring.actions.Action;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.controllers.dto.FilterDto;
+import org.backend.spring.controllers.dto.filter.EmployeeFilterDto;
 import org.backend.spring.controllers.dto.employee.EmployeeDto;
-import org.backend.spring.controllers.dto.employee.EmployeeNoIdDto;
 import org.backend.spring.controllers.dto.employee.EmployeeNoIdUsePostIdDto;
 import org.backend.spring.controllers.mappers.MapperBase;
 import org.backend.spring.models.Employee;
@@ -40,7 +39,7 @@ public class EmployeeRestController {
 
     @GetMapping("/list")
     @Operation(summary = "Get more employees with filter", tags = "Employee")
-    public EmployeeDto[] getEmployees(FilterDto filter) {
+    public EmployeeDto[] getEmployees(EmployeeFilterDto filter) {
         Filter<Employee> employeeFilter = FilterUtils.parseEmployeeFilter(filter);;
         Employee[] employees = storage.getArray(employeeFilter);
         return Arrays.stream(employees).map(
@@ -73,7 +72,7 @@ public class EmployeeRestController {
 
     @PostMapping("/remove")
     @Operation(summary = "Remove employee with filter", tags = "Employee")
-    public void removeEmployee(@RequestBody FilterDto filter) {
+    public void removeEmployee(@RequestBody EmployeeFilterDto filter) {
         filter.isStrictly = true;
         Filter<Employee> employeeFilter = FilterUtils.parseEmployeeFilter(filter);
         storage.remove(employeeFilter);

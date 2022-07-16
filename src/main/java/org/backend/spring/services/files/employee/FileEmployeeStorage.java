@@ -90,7 +90,7 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
     }
 
     @Override
-    public boolean remove(Filter<Employee> filter) {
+    public void remove(Filter<Employee> filter) {
         if (employees.values().stream().noneMatch(filter::match)) {
             throw new NotFoundException("Not found employee object.");
         }
@@ -101,7 +101,6 @@ public class FileEmployeeStorage implements DataStorage<Employee> {
             }
         }
         saveData();
-        return true;
     }
 
     private Void updateEmployees(PostEmployee old, PostEmployee newPost) {
