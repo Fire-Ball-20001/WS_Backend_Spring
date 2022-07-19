@@ -4,7 +4,7 @@ import org.backend.spring.actions.filters.Filter;
 
 import java.util.Optional;
 
-public interface DataStorage<T> {
+public interface DataService<T> {
     T get(Filter<T> filter);
 
     Optional<T> getOptional(Filter<T> filter);

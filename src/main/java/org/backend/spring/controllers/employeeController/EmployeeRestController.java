@@ -8,10 +8,10 @@ import org.backend.spring.actions.filters.Filter;
 import org.backend.spring.controllers.dto.filter.EmployeeFilterDto;
 import org.backend.spring.controllers.dto.employee.EmployeeDto;
 import org.backend.spring.controllers.dto.employee.EmployeeNoIdUsePostIdDto;
-import org.backend.spring.controllers.mappers.MapperBase;
+import org.backend.spring.controllers.mappers.EmployeeMapper;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;
-import org.backend.spring.services.DataStorage;
+import org.backend.spring.services.DataService;
 import org.backend.spring.utils.FilterUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +23,9 @@ import java.util.UUID;
 @RequestMapping("/employee")
 public class EmployeeRestController {
 
-    DataStorage<Employee> storage;
+    DataService<Employee> storage;
     ObjectMapper objectMapper;
-    MapperBase mapperBase;
+    EmployeeMapper mapper;
     Action<String, PostEmployee> getPostAction;
 
     @GetMapping("/{id}")
@@ -34,7 +34,7 @@ public class EmployeeRestController {
         Filter<Employee> employeeFilter = new Filter<>();
         employeeFilter.addOperation((employee -> FilterUtils.isStrictlyMatch(id.toString(),employee.getId().toString())));
         Employee find = storage.get(employeeFilter);
-        return mapperBase.getEmployeeMapper().toDto(find);
+        return mapper.toDto(find);
     }
 
     @GetMapping("/list")
@@ -43,7 +43,7 @@ public class EmployeeRestController {
         Filter<Employee> employeeFilter = FilterUtils.parseEmployeeFilter(filter);;
         Employee[] employees = storage.getArray(employeeFilter);
         return Arrays.stream(employees).map(
-                        employee -> mapperBase.getEmployeeMapper()
+                        employee -> mapper
                                 .toDto(employee))
                 .toArray(EmployeeDto[]::new);
     }
@@ -51,29 +51,28 @@ public class EmployeeRestController {
     @PostMapping("/{id}/set")
     @Operation(summary = "Replace employee", tags = "Employee")
     public EmployeeDto setEmployee(@PathVariable UUID id,@RequestBody EmployeeNoIdUsePostIdDto employeeDto) {
-        Employee employee = mapperBase.getEmployeeMapper().toEntity(
+        Employee employee = mapper.toEntity(
                 employeeDto,
                 getPostAction.execute(employeeDto.getPostId()),
                 id);
         storage.set(employee);
-        return mapperBase.getEmployeeMapper().toDto(employee);
+        return mapper.toDto(employee);
     }
 
-    @PostMapping("/add")
-    @Operation(summary = "Add new employee", tags = "Employee")
-    public EmployeeDto addEmployee(@RequestBody EmployeeNoIdUsePostIdDto employeeNoIdDto) {
-        Employee employee = mapperBase.getEmployeeMapper().toEntity(
+    @PostMapping("/create")
+    @Operation(summary = "Create new employee", tags = "Employee")
+    public EmployeeDto createEmployee(@RequestBody EmployeeNoIdUsePostIdDto employeeNoIdDto) {
+        Employee employee = mapper.toEntity(
                 employeeNoIdDto,
                 getPostAction.execute(employeeNoIdDto.getPostId()),
                 UUID.randomUUID());
         storage.add(employee);
-        return mapperBase.getEmployeeMapper().toDto(employee);
+        return mapper.toDto(employee);
     }
 
     @PostMapping("/remove")
     @Operation(summary = "Remove employee with filter", tags = "Employee")
     public void removeEmployee(@RequestBody EmployeeFilterDto filter) {
-        filter.isStrictly = true;
         Filter<Employee> employeeFilter = FilterUtils.parseEmployeeFilter(filter);
         storage.remove(employeeFilter);
     }

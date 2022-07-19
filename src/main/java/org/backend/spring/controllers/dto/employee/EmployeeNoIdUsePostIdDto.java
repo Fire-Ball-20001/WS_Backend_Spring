@@ -16,14 +16,10 @@ public class EmployeeNoIdUsePostIdDto {
     private String firstName;
     @NonNull
     private String lastName;
-    @Builder.Default
-    @NonNull
-    private String description = "";
+    private String description;
     @NonNull
     private String postId;
-    @Builder.Default
-    @NonNull
-    private String image = "";
+    private String image;
     @NonNull
     private String[] characteristics;
     @NonNull

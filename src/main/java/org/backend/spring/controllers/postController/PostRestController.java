@@ -2,24 +2,15 @@ package org.backend.spring.controllers.postController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.backend.spring.actions.filters.Filter;
-import org.backend.spring.controllers.dto.filter.EmployeeFilterDto;
 import org.backend.spring.controllers.dto.filter.PostFilterDto;
 import org.backend.spring.controllers.dto.post.PostDto;
 import org.backend.spring.controllers.dto.post.PostNoIdDto;
 import org.backend.spring.controllers.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
-import org.backend.spring.services.DataStorage;
+import org.backend.spring.services.DataService;
 import org.backend.spring.utils.FilterUtils;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -29,7 +20,7 @@ import java.util.UUID;
 @RequestMapping("/post")
 public class PostRestController {
 
-    DataStorage<PostEmployee> storage;
+    DataService<PostEmployee> storage;
     PostMapper postMapper;
     ObjectMapper objectMapper;
 
@@ -56,10 +47,10 @@ public class PostRestController {
         return postMapper.toDto(postEmployee);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/create")
     @ResponseBody
-    @Operation(summary = "Add new post", tags = "Post")
-    public PostDto addPost(@RequestBody PostNoIdDto postNoIdDto) {
+    @Operation(summary = "Create new post", tags = "Post")
+    public PostDto createPost(@RequestBody PostNoIdDto postNoIdDto) {
         PostEmployee postEmployee = postMapper.toEntity(postNoIdDto, UUID.randomUUID());
         storage.add(postEmployee);
         return postMapper.toDto(postEmployee);

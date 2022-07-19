@@ -12,6 +12,5 @@ public class PostDto {
     @NonNull
     private String name;
     @NonNull
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 }

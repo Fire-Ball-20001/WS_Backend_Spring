@@ -10,5 +10,4 @@ import lombok.*;
 public class PostFilterDto {
      private String id;
      private String name;
-     public Boolean isStrictly = false;
 }

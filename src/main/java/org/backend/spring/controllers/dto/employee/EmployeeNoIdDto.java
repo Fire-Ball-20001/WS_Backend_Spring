@@ -15,12 +15,10 @@ public class EmployeeNoIdDto {
     private String firstName;
     @NonNull
     private String lastName;
-    @Builder.Default
-    private String description = "";
+    private String description;
     @NonNull
     private PostDto post;
-    @Builder.Default
-    private String image = "";
+    private String image;
     @NonNull
     private String[] characteristics;
     @NonNull

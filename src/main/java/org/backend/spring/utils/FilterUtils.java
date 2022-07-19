@@ -39,92 +39,59 @@ public class FilterUtils {
         });
     }
 
+    private static boolean check(String first, String second) {
+        if (first == null || second == null) {
+            return true;
+        }
+        return isApproximatelyMatch(first, second);
+    }
+
     public static Filter<PostEmployee> parsePostFilter(PostFilterDto dto) {
         Filter<PostEmployee> filter = new Filter<>();
-        if(dto == null)
-        {
+        if (dto == null) {
             return filter;
         }
-        BiFunction<String, String, Boolean> compareFunction;
-        if (dto.isStrictly != null && dto.isStrictly) {
-            compareFunction = FilterUtils::isStrictlyMatch;
-        } else {
-            compareFunction = FilterUtils::isApproximatelyMatch;
-        }
-        if (dto.getName() != null) {
-            filter.addOperation(
-                    (PostEmployee post) -> compareFunction.apply(post.getName(), dto.getName()));
-        }
-        if (dto.getId() != null) {
-            filter.addOperation(
-                    (PostEmployee post) -> compareFunction.apply(post.getId().toString(), dto.getId()));
-        }
+        filter.addOperation(
+                (PostEmployee post) -> check(post.getName(), dto.getName()));
+        filter.addOperation(
+                (PostEmployee post) -> check(post.getId().toString(), dto.getId()));
+
         return filter;
     }
 
     public static Filter<Contacts> parseContactsFilter(ContactsFilterDto dto) {
         Filter<Contacts> filter = new Filter<>();
-        if(dto == null)
-        {
+        if (dto == null) {
             return filter;
         }
-        BiFunction<String, String, Boolean> compareFunction;
-        if (dto.isStrictly != null && dto.isStrictly) {
-            compareFunction = FilterUtils::isStrictlyMatch;
-        } else {
-            compareFunction = FilterUtils::isApproximatelyMatch;
-        }
-        if (dto.getPhone() != null) {
-            filter.addOperation(
-                    (Contacts contacts) -> compareFunction.apply(contacts.getPhone(), dto.getPhone()));
-        }
-        if (dto.getEmail() != null) {
-            filter.addOperation(
-                    (Contacts contacts) -> compareFunction.apply(contacts.getEmail(), dto.getEmail()));
-        }
-        if (dto.getWorkEmail() != null) {
-            filter.addOperation(
-                    (Contacts contacts) -> compareFunction.apply(contacts.getWorkEmail(), dto.getWorkEmail()));
-        }
+        filter.addOperation(
+                (Contacts contacts) -> check(contacts.getPhone(), dto.getPhone()));
+        filter.addOperation(
+                (Contacts contacts) -> check(contacts.getEmail(), dto.getEmail()));
+        filter.addOperation(
+                (Contacts contacts) -> check(contacts.getWorkEmail(), dto.getWorkEmail()));
+
         return filter;
     }
 
     public static Filter<Employee> parseEmployeeFilter(EmployeeFilterDto dto) {
         Filter<Employee> filter = new Filter<>();
-        if(dto == null)
-        {
+        if (dto == null) {
             return filter;
         }
-        BiFunction<String, String, Boolean> compareFunction;
-        if (dto.isStrictly != null && dto.isStrictly) {
-            compareFunction = FilterUtils::isStrictlyMatch;
-        } else {
-            compareFunction = FilterUtils::isApproximatelyMatch;
-        }
-        if (dto.getFirstName() != null) {
-            filter.addOperation(
-                    (Employee employee) -> compareFunction.apply(employee.getFirstName(), dto.getFirstName()));
-        }
-        if (dto.getLastName() != null) {
-            filter.addOperation(
-                    (Employee employee) -> compareFunction.apply(employee.getLastName(), dto.getLastName()));
-        }
-        if (dto.getId() != null) {
-            filter.addOperation(
-                    (Employee employee) -> compareFunction.apply(employee.getId().toString(), dto.getId()));
-        }
-        if (dto.getCharacteristics() != null) {
-            filter.addOperation(
-                    (Employee employee) -> compareStringArray(compareFunction,employee.getCharacteristics(),dto.getCharacteristics()));
-        }
-        if (dto.getDescription() != null) {
-            filter.addOperation(
-                    (Employee employee) -> compareFunction.apply(employee.getDescription(), dto.getDescription()));
-        }
-        if (dto.getJobType() != null) {
-            filter.addOperation(
-                    (Employee employee) -> compareFunction.apply(employee.getJobType().toString(), dto.getJobType().toString()));
-        }
+
+        filter.addOperation(
+                (Employee employee) -> check(employee.getFirstName(), dto.getFirstName()));
+        filter.addOperation(
+                (Employee employee) -> check(employee.getLastName(), dto.getLastName()));
+        filter.addOperation(
+                (Employee employee) -> check(employee.getId().toString(), dto.getId()));
+        filter.addOperation(
+                (Employee employee) -> compareStringArray(FilterUtils::check, employee.getCharacteristics(), dto.getCharacteristics()));
+        filter.addOperation(
+                (Employee employee) -> check(employee.getDescription(), dto.getDescription()));
+        filter.addOperation(
+                (Employee employee) -> check(employee.getJobType().toString(), dto.getJobType().toString()));
         filter.addOperation(
                 (Employee employee) -> parsePostFilter(dto.getPost()).match(employee.getPost()));
         filter.addOperation(

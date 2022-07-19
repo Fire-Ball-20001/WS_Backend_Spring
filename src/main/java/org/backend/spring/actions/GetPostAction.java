@@ -3,7 +3,7 @@ package org.backend.spring.actions;
 import lombok.AllArgsConstructor;
 import org.backend.spring.actions.filters.Filter;
 import org.backend.spring.models.PostEmployee;
-import org.backend.spring.services.DataStorage;
+import org.backend.spring.services.DataService;
 import org.backend.spring.utils.FilterUtils;
 import org.backend.spring.utils.PostUtils;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GetPostAction implements Action<String, PostEmployee> {
 
-    private final DataStorage<PostEmployee> postStorage;
+    private final DataService<PostEmployee> postStorage;
 
     @Override
     public PostEmployee execute(String argument) {

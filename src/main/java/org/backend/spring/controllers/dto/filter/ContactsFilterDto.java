@@ -11,5 +11,4 @@ public class ContactsFilterDto {
     private String phone;
     private String email;
     private String workEmail;
-    public Boolean isStrictly = false;
 }

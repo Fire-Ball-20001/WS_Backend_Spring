@@ -17,6 +17,5 @@ public class EmployeeFilterDto {
     private String[] characteristics;
     private ContactsFilterDto contacts;
     private JobType jobType;
-    public Boolean isStrictly = false;
 
 }

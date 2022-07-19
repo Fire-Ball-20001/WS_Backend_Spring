@@ -9,7 +9,7 @@ import org.backend.spring.events.BinaryEvent;
 import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.controllers.mappers.PostMapper;
 import org.backend.spring.models.PostEmployee;
-import org.backend.spring.services.DataStorage;
+import org.backend.spring.services.DataService;
 import org.backend.spring.utils.PostUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,7 +30,7 @@ import static org.backend.spring.utils.Files.deleteFileOrDirectory;
 @CommonsLog
 @Component
 @RequiredArgsConstructor
-public class FilePostStorage implements DataStorage<PostEmployee> {
+public class FilePostStorage implements DataService<PostEmployee> {
 
     private Map<UUID, PostEmployee> posts = new HashMap<>();
     @Value("${data.path-to-posts}")

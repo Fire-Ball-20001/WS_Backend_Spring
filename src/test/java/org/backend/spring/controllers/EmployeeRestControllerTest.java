@@ -23,18 +23,5 @@ class EmployeeRestControllerTest {
         //Assert
     }
 
-    private List<Arguments> getFilters() {
-        return Lists.newArrayList(
-                Arguments.of(EmployeeFilterDto.builder()
-                        .firstName("Test")
-                        .isStrictly(true)
-                        .build()),
-                Arguments.of(EmployeeFilterDto.builder()
-                        .lastName("Test_2")
-                        .isStrictly(true)
-                        .build())
-        );
-    }
-
 
 }

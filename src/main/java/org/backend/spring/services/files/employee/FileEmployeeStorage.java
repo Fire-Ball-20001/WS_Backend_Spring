@@ -11,7 +11,7 @@ import org.backend.spring.exceptions.NotFoundException;
 import org.backend.spring.controllers.mappers.EmployeeMapper;
 import org.backend.spring.models.Employee;
 import org.backend.spring.models.PostEmployee;
-import org.backend.spring.services.DataStorage;
+import org.backend.spring.services.DataService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,7 @@ import static org.backend.spring.utils.Files.deleteFileOrDirectory;
 @Component
 @CommonsLog
 @RequiredArgsConstructor
-public class FileEmployeeStorage implements DataStorage<Employee> {
+public class FileEmployeeStorage implements DataService<Employee> {
     private Map<UUID, Employee> employees = new HashMap<>();
     @Value("${data.path-to-employees}")
     private final String pathStr;
